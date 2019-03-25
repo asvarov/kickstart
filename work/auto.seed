@@ -18,7 +18,7 @@ ubiquity partman-auto-lvm/guided_size string max
 ubiquity partman-lvm/device_remove_lvm boolean true
 ubiquity partman-md/device_remove_md boolean true
 # Uncomment line below to skip partioning layout confirmation
-#ubiquity partman-lvm/confirm boolean true
+ubiquity partman-lvm/confirm boolean true
 
 ### PARTITIONING ###
 # To customise the partitioning layout comment the following line
@@ -72,7 +72,7 @@ ubiquity partman-auto/choose_recipe select home
 # This makes partman automatically partition without confirmation
 d-i partman-partitioning/confirm_write_new_label boolean true
 d-i partman/choose_partition select finish
-# d-i partman/confirm boolean true
+d-i partman/confirm boolean true
 d-i partman/confirm_nooverwrite boolean true
 
 # This is fairly safe to set, it makes grub install automatically to the MBR
@@ -100,27 +100,43 @@ d-i time/zone string Europe/Kiev
 d-i clock-setup/ntp boolean true
 
 # Packages, Mirrors, Image
-d-i base-installer/kernel/override-image string linux-server
-d-i base-installer/kernel/override-image string linux-image-amd64
 d-i mirror/country string UA
 d-i mirror/http/proxy string
 d-i apt-setup/restricted boolean true
 d-i apt-setup/universe boolean true
-d-i pkgsel/install-language-support boolean false
+d-i pkgsel/install-language-support boolean true
+d-i pkgsel/include string openssh-server
 tasksel tasksel/first multiselect ubuntu-desktop
 
 # Users
-d-i passwd/user-fullname string Ansible
+d-i passwd/user-fullname string ansible
 d-i passwd/username string ansible
-d-i passwd/user-password-crypted password $apr1$3pZXgLAL$Z5OvnecJQvqFPtLt43IGo0
+# Create passwd mkpasswd -m sha-512. MD-5 crypt not work.
+d-i passwd/user-password-crypted password $6$n9oxP2WS$FDPXE8WOQtmfl3Thm3kpNBWRc6Ukl5VZl2ycIBK.h9BH/5NUKnvUqWxXBkogjHsW4kXSCgbC26O/llQKAOWTP/
+d-i passwd/user-default-groups string sudo
 d-i passwd/root-login boolean true
-d-i passwd/root-password-crypted password $apr1$6WCLYead$zr4pYzQ/Crm0bMpg41spr0
+d-i passwd/root-password-crypted password $6$B9MvKlP0sYb$yV23889l1BQE44aysdaqr7USVw/NkPJBsOsxVzAXRQ3mzEtXCapc/0Y6g8wmpGeCzOWd/ovCeUuNWGF/mFd/I0
 d-i user-setup/allow-password-weak boolean true
 
 ### POST INSTALLATION COMMANDS ###
 # Run custom commands post installation
 # For example install a Software Configuration Management tool
 ubiquity ubiquity/success_command string \
-  cp -a /cdrom/install/pbis-open-8.8.0.506.linux.x86_64.deb.sh /target/root/ ;\
-  chmod 777 /target/root/pbis-open-8.8.0.506.linux.x86_64.deb.sh get touch /root/pbis-open-8.8.0.506.linux.x86_64.deb.sh
+  cp -a /cdrom/install/pbis-open-8.8.0.506.linux.x86_64.deb.sh /target/root/; \
+  in-target apt update; \
+  in-target apt install -y mc; \
+  in-target rm -f /usr/lib/gnome-initial-setup/gnome-initial-setup; \
+  in-target chmod 777 /root/pbis-open-8.8.0.506.linux.x86_64.deb.sh; \
+  in-target bash /root/pbis-open-8.8.0.506.linux.x86_64.deb.sh
+
+#  cp -a /cdrom/install/ad.sh /target/root/ ;\
+#ubiquity  ubiquity/success_command string \
+#cp -a /cdrom/install/pbis-open-8.8.0.506.linux.x86_64.deb.sh /target/root/; \
+#chmod 777 /target/root/pbis-open-8.8.0.506.linux.x86_64.deb.sh; \
+#/target/root/pbis-open-8.8.0.506.linux.x86_64.deb.sh; \
+#  in-target apt update && apt install -y ssh; \
+#rm -f /target/usr/lib/gnome-initial-setup/gnome-initial-setup; \
+#  in-target apt install -y language-pack-gnome-uk language-pack-gnome-uk-base language-pack-uk language-pack-uk-base fonts-takao-gothic fonts-takao-mincho $(check-language-support); \
+#  in-target gsettings set org.gnome.desktop.input-sources xkb-options "['grp:ctrl_shift_toggle']" \
+
 
