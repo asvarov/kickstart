@@ -1,0 +1,34 @@
+1. Генерация пары ключей ssh на хостовой машине для подключения к рабочим станциям
+4. Добавление хостового публичного SSH ключа key.pub на каждую воркстейшн в ~/.ssh/authorized_key
+(ssh -i ~/.ssh/key.private root@ws.lab)
+5. Инсталл ansible на хост
+Инсталл Python на все воркстейшн
+install ntpdate ntp
+
+server dc.domain.com >> /etc/ntp.conf 
+/etc/hostname
+/etc/resolv.conf Для домена Active Directory
+/etc/dhcp/dhclient.conf
+net time set -S dc
+wget https://github.com/BeyondTrust/pbis-open/releases/download/8.8.0/pbis-open-8.8.0.506.linux.x86_64.deb.sh
+chmod +x pbis-open-8.8.0.506.linux.x86_64.deb.sh
+./pbis-open-8.8.0.506.linux.x86_64.deb.sh
+/opt/pbis/bin/domainjoin-cli join TEST.LAB administrator
+
+
+создать папку /etc/skel/.config
+/etc/skel/.config/autostart - сюда ложить скрипт ввода компа в домен
+/etc/skel/.config/dconf - сюда скопировать файл с настроеным удаленным дустопуом по screen-sharing (user)
+/etc/skel/.ssh/authorized_key - сюда положить public key пользователя ansible и 			
+
+указать Proxy для APT
+отключить auto update на клиентах
+
+6. Написание плейбука для рабочих станций
+   а. создание инвентори файла
+   б. деление на группы (dev, test, departmets)
+   
+   
+   
+   
+   
