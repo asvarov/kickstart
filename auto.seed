@@ -83,24 +83,46 @@ d-i console-setup/ask_detect boolean false
 d-i console-setup/layoutcode string us
 
 # Network
-d-i netcfg/get_hostname string unassigned-hostname
-d-i netcfg/get_domain string unassigned-domain
+d-i netcfg/get_hostname string Ubuntu-ws-01
+d-i netcfg/get_domain string test.lab
+
+# WiFi network
+# Predetermine several required settings for wifi, misc.
 d-i netcfg/choose_interface select auto
+d-i netcfg/wireless_show_essids select SMIN
+d-i netcfg/wireless_essid string SMIN
+d-i netcfg/wireless_essid_again string SMIN
+d-i netcfg/wireless_security_type select wpa
+d-i netcfg/wireless_wpa string R8ozYvsr
 
 # Clock
 d-i clock-setup/utc-auto boolean true
 d-i clock-setup/utc boolean true
 d-i time/zone string Europe/Kiev
 d-i clock-setup/ntp boolean true
+d-i clock-setup/ntp-server string dc-01.test.lab
+
+### Package selection
+tasksel tasksel/first multiselect ubuntu-desktop
 
 # Packages, Mirrors, Image
 d-i mirror/country string UA
 #d-i mirror/http/proxy string http://172.19.1.1:3142
 d-i apt-setup/restricted boolean true
 d-i apt-setup/universe boolean true
+
+# Language pack selection
+d-i pkgsel/language-packs multiselect uk
 d-i pkgsel/install-language-support boolean true
-d-i pkgsel/include string wget ssh openssh-server git net-tools python python3 ntpdate ntp
-tasksel tasksel/first multiselect ubuntu-desktop
+d-i pkgsel/include string wget \
+    mc \
+	ssh \
+	openssh-server \
+	git \
+	net-tools \
+	python \python3 \
+	ntpdate \
+	ntp 
 
 # Users
 d-i passwd/user-fullname string ansible
@@ -114,26 +136,30 @@ d-i user-setup/allow-password-weak boolean true
 
 ### POST INSTALLATION COMMANDS ###
 # Run custom commands post installation
-# For example install a Software Configuration Management tool
 ubiquity ubiquity/success_command string \
-#  in-target apt update -y; \
-  in-target rm -f /usr/lib/gnome-initial-setup/gnome-initial-setup; \ # Удаление Welcome окна
-  cp -a /cdrom/install/pbis-open-8.8.0.506.linux.x86_64.deb.sh /target/home/ansible/; \ # Скрипт для ввода компа в домен
+  in-target rm -f /usr/lib/gnome-initial-setup/gnome-initial-setup; \
+# Remove Welcome splash screen on user login
+  cp -a /cdrom/install/pbis-open-8.8.0.506.linux.x86_64.deb.sh /target/home/ansible/; \
+# Скрипт для ввода компа в домен
   in-target chmod 777 /home/ansible/pbis-open-8.8.0.506.linux.x86_64.deb.sh; \
-  in-target bash /home/ansible/pbis-open-8.8.0.506.linux.x86_64.deb.sh; \ # Распаковывается в /opt/
-  in-target echo "server dc-01.test.lab" >> /etc/ntp.conf; \
-  in-target rm -f /usr/games/; \ # Удаление игр по умолчанию
-  in-target mkdir -p /etc/skel/.config/autostart; \ ## сюда ложить скрипты автостарта
-  in-target mkdir -p /etc/skel/.config/dconf; \ ## сюда скопировать файл с настроеным удаленным дустопуом по screen-sharing (user)
+#  in-target bash /home/ansible/pbis-open-8.8.0.506.linux.x86_64.deb.sh; \
+# Распаковывается в /opt/
+  in-target echo "server dc-01.test.lab" >> /target/etc/ntp.conf; \
+  in-target rm -f /usr/games/*; \
+# Удаление игр по умолчанию
+  in-target mkdir -p /etc/skel/.config/autostart; \
+# сюда ложить скрипты автостарта
+  in-target mkdir -p /etc/skel/.config/dconf; \
+# сюда скопировать файл с настроеным удаленным дустопуом по screen-sharing (user)
   cp -a /cdrom/install/user /target/etc/skel/.config/dconf/; \
-  in-target mkdir -p /etc/skel/.ssh; \ ## - сюда положить public key пользователя admin для доступа с сервера без пароля
+  in-target mkdir -p /etc/skel/.ssh; \
+# - сюда положить public key пользователя admin для доступа с сервера без пароля
+  in-target touch /target/etc/skel/.ssh/authorized_key
   in-target echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDbJoQoQEoOpRUwwESYDTfV/vWhkG/3AOF7Md2SH8ghV6j8e33L35KDXqk7UliD3OKRT1Cr0/V7PWnqYm7oQoq7px1Jt0gHF2BqSHHSU3iD4XAjd3dnJW+G5jgvW70E1Iru26WelG7NMV7F9j+x5kBp6Xa14/40F51X/h20o9sj6bnwGLf5u3wvlFQcOnsCdmOIuoh4wRc/9jSIubhCafo23DVBCg4gBMdNkKCz7uD9ibLw/xqwwnMZWWs+2nCwnu7FD5DSei05YqneQu+W1G2wbHOGAMiqMq3GAroWshHM6SP6GwQtimVJvPoY3/k0GfFTZeZzhZ7jZUralALImzRl root@wa" >> /target/skel/.ssh/authorized_key; \
-  cp -a /cdrom/install/20auto-upgrades /target/etc/apt/apt.conf.d/; \ ## Отключение автоапдейтов и апгрейдов
-  cp -a /cdrom/install/hplip-3.19.1.run /target/home/ansible/; \ ## Драйдера для HP 
-  in-target chmod 777 /home/ansible/hplip-3.19.1.run; \
-  in-target bash /home/ansible/hplip-3.19.1.run; \
-#  in-target apt upgrade -y; \
+  cp -a /cdrom/install/20auto-upgrades /target/etc/apt/apt.conf.d/; \
+# Отключение автоапдейтов и апгрейдов
+  cp -a /cdrom/install/hplip-3.19.1.run /target/home/ansible/; \
+# Драйдера для HP 
+  in-target chmod 777 /home/ansible/hplip-3.19.1.run
   
 popularity-contest popularity-contest/participate boolean false
-
-
